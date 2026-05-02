@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0B0F1A">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="20dp">
+
+            <TextView
+                android:id="@+id/btnBack"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="←"
+                android:textSize="22sp"
+                android:textColor="#FFFFFF"
+                android:padding="10dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Settings"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:layout_marginStart="10dp"/>
+        </LinearLayout>
+
+        <!-- Device Name -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Device Name"
+            android:textColor="#9AA4B2"/>
+
+        <EditText
+            android:id="@+id/etName"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:text="My Device"
+            android:textColor="#00E5C3"
+            android:background="#121826"
+            android:padding="12dp"
+            android:layout_marginBottom="15dp"/>
+
+        <!-- Device ID -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Device ID"
+            android:textColor="#9AA4B2"/>
+
+        <EditText
+            android:id="@+id/etId"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:text="D-5E8A"
+            android:textColor="#FFFFFF"
+            android:background="#121826"
+            android:padding="12dp"
+            android:layout_marginBottom="15dp"/>
+
+        <!-- TTL -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Message TTL (hops)"
+            android:textColor="#9AA4B2"/>
+
+        <EditText
+            android:id="@+id/etTTL"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:text="5"
+            android:textColor="#FFFFFF"
+            android:background="#121826"
+            android:padding="12dp"
+            android:layout_marginBottom="10dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Maximum number of hops for message forwarding"
+            android:textColor="#6B7280"
+            android:textSize="12sp"
+            android:layout_marginBottom="20dp"/>
+
+        <!-- Auto Discovery -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:background="#121826"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:layout_marginBottom="10dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Auto Discovery"
+                android:textColor="#FFFFFF"
+                android:layout_weight="1"/>
+
+            <Switch
+                android:id="@+id/switchDiscovery"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"/>
+        </LinearLayout>
+
+        <!-- Auto Connect -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:background="#121826"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:layout_marginBottom="20dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Auto Connect"
+                android:textColor="#FFFFFF"
+                android:layout_weight="1"/>
+
+            <Switch
+                android:id="@+id/switchConnect"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+        <!-- Save Button -->
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:text="Save Settings"
+            android:textColor="#000"
+            android:backgroundTint="#00E5C3"
+            android:layout_marginBottom="10dp"/>
+
+        <!-- Reset Button -->
+        <Button
+            android:id="@+id/btnReset"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:text="Reset to Defaults"
+            android:textColor="#FF4D4D"
+            android:background="#121826"/>
+
+    </LinearLayout>
+</ScrollView>
