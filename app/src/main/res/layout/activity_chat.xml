@@ -27,17 +27,32 @@
             android:textColor="#000"
             android:background="#00E5A0" />
 
-        <TextView
-            android:id="@+id/tvDevices"
+        <LinearLayout
+            android:id="@+id/btnDeviceSetup"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="Devices"
+            android:orientation="horizontal"
             android:gravity="center"
-            android:textSize="14sp"
-            android:padding="10dp"
-            android:textColor="#00E5A0"
-            android:background="@android:color/transparent" />
+            android:layout_marginStart="8dp">
+
+            <TextView
+                android:id="@+id/tvDevices"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Devices"
+                android:gravity="center"
+                android:textSize="14sp"
+                android:padding="10dp"
+                android:textColor="#00E5A0"
+                android:background="@android:color/transparent" />
+
+            <View
+                android:id="@+id/greenDot"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:visibility="gone" />
+        </LinearLayout>
     </LinearLayout>
 
     <!-- Messages -->
