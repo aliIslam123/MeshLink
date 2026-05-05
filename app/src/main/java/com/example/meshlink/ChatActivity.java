@@ -4,8 +4,6 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.EditText;
@@ -17,9 +15,10 @@ import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
-public class ChatActivity extends Activity {
+public class ChatActivity extends Activity implements MeshManager.MeshListener {
 
     private LinearLayout linearMessages;
     private ScrollView scrollMessages;
@@ -28,13 +27,17 @@ public class ChatActivity extends Activity {
     private TextView tvBroadcast, tvDevices;
     private View greenDot;
     private LinearLayout btnDeviceSetup;
-    private Handler handler;
     private SimpleDateFormat timeFormat;
+    private MeshManager meshManager;
+    private String currentTargetId = "BROADCAST";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
+        meshManager = MeshManager.getInstance(this);
+        meshManager.setListener(this);
 
         linearMessages = findViewById(R.id.linearMessages);
         scrollMessages = findViewById(R.id.scrollMessages);
@@ -45,32 +48,26 @@ public class ChatActivity extends Activity {
         greenDot = findViewById(R.id.greenDot);
         btnDeviceSetup = findViewById(R.id.btnDeviceSetup);
 
-        handler = new Handler(Looper.getMainLooper());
         timeFormat = new SimpleDateFormat("hh:mm a", Locale.getDefault());
 
         styleFixedElements();
-        addInitialMessages();
+        loadMessageHistory();
         setupListeners();
     }
 
-    private void styleFixedElements() {
-        GradientDrawable broadcastBg = new GradientDrawable();
-        broadcastBg.setCornerRadius(dpToPx(18));
-        broadcastBg.setColor(Color.parseColor("#00E5A0"));
-        tvBroadcast.setBackground(broadcastBg);
-        tvBroadcast.setTextColor(Color.BLACK);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        meshManager.setListener(this);
+    }
 
-        GradientDrawable devicesBg = new GradientDrawable();
-        devicesBg.setCornerRadius(dpToPx(18));
-        devicesBg.setColor(Color.parseColor("#0B0F14"));
-        tvDevices.setBackground(devicesBg);
-        tvDevices.setTextColor(Color.parseColor("#00E5A0"));
+    private void styleFixedElements() {
+        updateTargetUi();
 
         GradientDrawable setupBg = new GradientDrawable();
         setupBg.setCornerRadius(dpToPx(18));
         setupBg.setColor(Color.parseColor("#0B0F14"));
         btnDeviceSetup.setBackground(setupBg);
-        btnDeviceSetup.getChildAt(1).setVisibility(View.VISIBLE);
 
         GradientDrawable dotBg = new GradientDrawable();
         dotBg.setShape(GradientDrawable.OVAL);
@@ -89,47 +86,51 @@ public class ChatActivity extends Activity {
         btnSend.setBackgroundColor(Color.parseColor("#00E5A0"));
     }
 
-    private void addInitialMessages() {
-        handler.postDelayed(() -> {
-            addBubble("Hey, Is anyone there?", false);
-        }, 300);
+    private void updateTargetUi() {
+        if ("BROADCAST".equals(currentTargetId)) {
+            tvBroadcast.setBackground(getRoundedBg("#00E5A0"));
+            tvBroadcast.setTextColor(Color.BLACK);
+            tvDevices.setBackground(getRoundedBg("#0B0F14"));
+            tvDevices.setTextColor(Color.parseColor("#00E5A0"));
+        } else {
+            tvDevices.setBackground(getRoundedBg("#00E5A0"));
+            tvDevices.setTextColor(Color.BLACK);
+            tvBroadcast.setBackground(getRoundedBg("#0B0F14"));
+            tvBroadcast.setTextColor(Color.parseColor("#00E5A0"));
+        }
+    }
 
-        handler.postDelayed(() -> {
-            addBubble("Yes! Connection established.", true);
-        }, 800);
+    private GradientDrawable getRoundedBg(String color) {
+        GradientDrawable gd = new GradientDrawable();
+        gd.setCornerRadius(dpToPx(18));
+        gd.setColor(Color.parseColor(color));
+        return gd;
+    }
+
+    private void loadMessageHistory() {
+        linearMessages.removeAllViews();
+        for (MessageModel msg : meshManager.getMessageHistory()) {
+            boolean isMine = msg.getSenderId().equals(meshManager.getIdentityManager().getDeviceId());
+            addBubble(msg.getSenderName() + ": " + msg.getContent(), isMine, msg.getTimestamp());
+        }
     }
 
     private void setupListeners() {
         tvBroadcast.setOnClickListener(v -> {
-            GradientDrawable bg = new GradientDrawable();
-            bg.setCornerRadius(dpToPx(18));
-            bg.setColor(Color.parseColor("#00E5A0"));
-            tvBroadcast.setBackground(bg);
-            tvBroadcast.setTextColor(Color.BLACK);
-
-            GradientDrawable bg2 = new GradientDrawable();
-            bg2.setCornerRadius(dpToPx(18));
-            bg2.setColor(Color.parseColor("#0B0F14"));
-            tvDevices.setBackground(bg2);
-            tvDevices.setTextColor(Color.parseColor("#00E5A0"));
-
+            currentTargetId = "BROADCAST";
+            updateTargetUi();
             Toast.makeText(this, "Broadcast mode", Toast.LENGTH_SHORT).show();
         });
 
         tvDevices.setOnClickListener(v -> {
-            GradientDrawable bg = new GradientDrawable();
-            bg.setCornerRadius(dpToPx(18));
-            bg.setColor(Color.parseColor("#00E5A0"));
-            tvDevices.setBackground(bg);
-            tvDevices.setTextColor(Color.BLACK);
-
-            GradientDrawable bg2 = new GradientDrawable();
-            bg2.setCornerRadius(dpToPx(18));
-            bg2.setColor(Color.parseColor("#0B0F14"));
-            tvBroadcast.setBackground(bg2);
-            tvBroadcast.setTextColor(Color.parseColor("#00E5A0"));
-
-            Toast.makeText(this, "Devices mode", Toast.LENGTH_SHORT).show();
+            if (!meshManager.getConnectedPeers().isEmpty()) {
+                currentTargetId = meshManager.getConnectedPeers().get(0).getEndpointId();
+                Toast.makeText(this, "Messaging: " + meshManager.getConnectedPeers().get(0).getDeviceName(), Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "No devices connected. Staying in Broadcast.", Toast.LENGTH_SHORT).show();
+                currentTargetId = "BROADCAST";
+            }
+            updateTargetUi();
         });
 
         btnSend.setOnClickListener(v -> sendMessage());
@@ -139,16 +140,13 @@ public class ChatActivity extends Activity {
         String text = etMessage.getText().toString().trim();
         if (text.isEmpty()) return;
 
-        addBubble(text, true);
+        meshManager.sendMessage(currentTargetId, text);
+        addBubble("Me: " + text, true, System.currentTimeMillis());
         etMessage.setText("");
-
-        handler.postDelayed(() -> {
-            addBubble(generateReply(text), false);
-        }, 1000);
     }
 
-    private void addBubble(String message, boolean isUser) {
-        String time = timeFormat.format(new Date());
+    private void addBubble(String message, boolean isUser, long timestamp) {
+        String time = timeFormat.format(new Date(timestamp));
 
         LinearLayout container = new LinearLayout(this);
         LinearLayout.LayoutParams containerParams = new LinearLayout.LayoutParams(
@@ -202,30 +200,20 @@ public class ChatActivity extends Activity {
         scrollMessages.post(() -> scrollMessages.fullScroll(View.FOCUS_DOWN));
     }
 
-    private String generateReply(String msg) {
-        msg = msg.toLowerCase();
-        if (msg.contains("hello") || msg.contains("hi") || msg.contains("hey")) {
-            return "Hey! How can I help you?";
-        } else if (msg.contains("test")) {
-            return "Test received! Everything is working.";
-        } else if (msg.contains("how are you")) {
-            return "I'm doing great, thanks!";
-        } else if (msg.contains("anyone")) {
-            return "Yes! Connection established.";
-        } else {
-            return "Got your message!";
-        }
-    }
-
     private int dpToPx(int dp) {
         return (int) (dp * getResources().getDisplayMetrics().density);
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (handler != null) {
-            handler.removeCallbacksAndMessages(null);
-        }
+    public void onMessageReceived(MessageModel message) {
+        boolean isMine = message.getSenderId().equals(meshManager.getIdentityManager().getDeviceId());
+        addBubble(message.getSenderName() + ": " + message.getContent(), isMine, message.getTimestamp());
     }
+
+    @Override public void onPeerDiscovered(List<PeerModel> peers) {}
+    @Override public void onPeerConnected(PeerModel peer) {}
+    @Override public void onPeerDisconnected(PeerModel peer) {}
+    @Override public void onLogUpdated(List<LogModel> logs) {}
+    @Override public void onStatusChanged(boolean isRunning) {}
+    @Override public void onCountersUpdated(int sent, int received, int forwarded) {}
 }
